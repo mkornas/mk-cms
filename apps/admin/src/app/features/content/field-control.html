@@ -1,0 +1,115 @@
+@if (field().type === 'richtext') {
+  <!-- Long-form prose gets an open writing canvas, not a boxed form field:
+       a quiet eyebrow label above the block editor (HTML mode: seeds from the
+       stored HTML string via ngModel, emits serialized HTML on change). -->
+  <div class="prose-field">
+    <span class="prose-field__label" [id]="'prose-' + field().key">
+      {{ field().name }}@if (field().required) {<span aria-hidden="true"> *</span>}
+    </span>
+    <mk-block-editor
+      valueFormat="html"
+      placeholder="Start writing…"
+      [ariaLabel]="field().name"
+      [ngModel]="asString()"
+      (htmlChange)="value.set($event)"
+    />
+    @if (error(); as msg) {
+      <p class="prose-field__error">{{ msg }}</p>
+    }
+  </div>
+} @else {
+<mk-form-field
+  [label]="field().name"
+  [required]="field().required"
+  [error]="error() ?? jsonError()"
+>
+  @switch (field().type) {
+    @case ('textarea') {
+      <textarea
+        mkInput
+        rows="6"
+        [value]="asString()"
+        (input)="setFromInput($event.target)"
+      ></textarea>
+    }
+    @case ('number') {
+      <input
+        mkInput
+        type="number"
+        [value]="asNumber()"
+        (input)="setNumber($event.target)"
+      />
+    }
+    @case ('boolean') {
+      <mk-switch [checked]="asBool()" (checkedChange)="value.set($event)" />
+    }
+    @case ('date') {
+      <mk-date-picker
+        [value]="asDate()"
+        (valueChange)="setDate($event)"
+        [clearable]="true"
+      />
+    }
+    @case ('select') {
+      @if (multiple()) {
+        <mk-multi-select
+          [options]="selectOptions()"
+          [value]="asArray()"
+          (valueChange)="value.set($event)"
+        />
+      } @else {
+        <mk-select
+          [options]="selectOptions()"
+          [value]="value()"
+          (valueChange)="value.set($event)"
+        />
+      }
+    }
+    @case ('relation') {
+      @if (multiple()) {
+        <mk-multi-select
+          placeholder="Search…"
+          [options]="relationOptions()"
+          [value]="asArray()"
+          (valueChange)="value.set($event)"
+        />
+      } @else {
+        <mk-select
+          [options]="relationOptions()"
+          [value]="value()"
+          (valueChange)="value.set($event)"
+        />
+      }
+    }
+    @case ('media') {
+      <app-media-field
+        [field]="field()"
+        [value]="value()"
+        (valueChange)="value.set($event)"
+      />
+    }
+    @case ('json') {
+      <mk-code-editor
+        language="json"
+        [value]="jsonText()"
+        (valueChange)="setJson($event)"
+        [rows]="8"
+      />
+    }
+    @default {
+      <input
+        mkInput
+        [type]="
+          field().type === 'email'
+            ? 'email'
+            : field().type === 'url'
+              ? 'url'
+              : 'text'
+        "
+        [value]="asString()"
+        (input)="setFromInput($event.target)"
+      />
+    }
+  }
+</mk-form-field>
+}

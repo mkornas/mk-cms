@@ -1,0 +1,94 @@
+<mk-page-header
+  heading="Plugins"
+  description="Activate installed plugins and edit their settings."
+/>
+
+@if (error(); as msg) {
+  <mk-alert tone="danger" style="margin-bottom: var(--mk-space-4)">{{ msg }}</mk-alert>
+}
+
+<div class="layout">
+  <!-- Installed plugins -->
+  <mk-card>
+    @if (showSkeleton()) {
+      <mk-skeleton-preset preset="list" [rows]="6" loadingLabel="Loading plugins…" />
+    } @else if (plugins().length === 0) {
+      <mk-empty-state
+        icon="settings"
+        title="No plugins installed"
+        description="Installed plugins will appear here."
+        size="sm"
+      />
+    } @else {
+      <mk-table
+        [columns]="pluginColumns"
+        [data]="pluginRows()"
+        trackKey="name"
+        [hover]="true"
+        [clickableRows]="true"
+        (rowClick)="select($event)"
+        emptyMessage="No plugins installed."
+        [stackAt]="480"
+      >
+        <ng-template mkTableCell="status" let-value>
+          <mk-tag [tone]="statusTone(value)" variant="soft">{{ value }}</mk-tag>
+        </ng-template>
+      </mk-table>
+    }
+  </mk-card>
+
+  <!-- Selected plugin -->
+  <mk-card>
+    @if (active(); as p) {
+      <div class="detail-head">
+        <div>
+          <h2>{{ p.displayName }}</h2>
+          @if (p.description) { <p>{{ p.description }}</p> }
+        </div>
+        <div class="toggle">
+          <span>{{ p.enabled ? 'Active' : 'Inactive' }}</span>
+          <mk-switch [checked]="p.enabled" (checkedChange)="toggle(p)" />
+        </div>
+      </div>
+
+      @if (p.capabilities.length) {
+        <div class="caps">
+          @for (c of p.capabilities; track c) {
+            <mk-badge tone="info" variant="soft">{{ c }}</mk-badge>
+          }
+        </div>
+      }
+
+      @if (fieldDefs().length) {
+        <h3>Settings</h3>
+        @if (!p.enabled) {
+          <mk-alert tone="warning" style="margin-bottom: var(--mk-space-3)">
+            Activate the plugin to apply setting changes.
+          </mk-alert>
+        }
+        <div class="settings">
+          @for (f of fieldDefs(); track f.key) {
+            <app-field-control
+              [field]="f"
+              [value]="settings()[f.key]"
+              (valueChange)="setField(f.key, $event)"
+            />
+          }
+        </div>
+        <div class="settings-actions">
+          <button mkButton tone="primary" [loading]="busy()" (click)="save()">
+            Save settings
+          </button>
+        </div>
+      } @else {
+        <p class="mk-muted">This plugin has no configurable settings.</p>
+      }
+    } @else {
+      <mk-empty-state
+        icon="edit"
+        title="No plugin selected"
+        description="Select a plugin to manage it."
+      />
+    }
+  </mk-card>
+</div>

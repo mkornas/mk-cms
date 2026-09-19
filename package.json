@@ -1,0 +1,22 @@
+{
+  "name": "mk-cms",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A modern, extensible, headless multi-tenant CMS. A WordPress alternative.",
+  "author": "Mateusz Kornaś",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "api:dev": "pnpm --filter @mk-cms/api start:dev",
+    "api:build": "pnpm --filter @mk-cms/api build",
+    "admin:dev": "pnpm --filter @mk-cms/admin start",
+    "admin:build": "pnpm --filter @mk-cms/admin build",
+    "build": "pnpm -r build",
+    "infra:up": "docker compose -f docker/docker-compose.yml up -d postgres redis",
+    "infra:down": "docker compose -f docker/docker-compose.yml down",
+    "infra:reset": "docker compose -f docker/docker-compose.yml down -v"
+  }
+}

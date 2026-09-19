@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+.git
+.idea
+.vscode
+docker/data
+**/.env
+**/.env.*
+!**/.env.example
+*.log

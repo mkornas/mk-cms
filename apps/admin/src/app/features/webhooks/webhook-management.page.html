@@ -1,0 +1,88 @@
+<mk-page-header heading="Webhooks" description="Endpoints subscribed to content events, with a test ping and per-webhook delivery history." />
+@if (error(); as m) { <mk-alert tone="danger" style="margin-bottom:var(--mk-space-4)">{{ m }}</mk-alert> }
+
+<div class="layout">
+  <mk-card>
+    <h2>Endpoints</h2>
+    @if (showSkeleton()) {
+      <mk-skeleton-preset preset="list" [rows]="6" loadingLabel="Loading webhooks…" />
+    } @else {
+    <div class="list">
+      @for (w of webhooks(); track w.id) {
+        <div class="item" [attr.data-active]="editingId() === w.id" (click)="select(w)"
+             role="button" tabindex="0"
+             (keydown.enter)="select(w)" (keydown.space)="$event.preventDefault(); select(w)">
+          <span class="url">{{ w.url }}</span>
+          <span style="display:flex;align-items:center;gap:var(--mk-space-2)">
+            @if (!w.enabled) { <mk-badge tone="neutral" variant="soft">off</mk-badge> }
+            <button mkButton variant="ghost" size="sm" tone="danger" (click)="remove(w, $event)">Delete</button>
+          </span>
+        </div>
+      } @empty {
+        <mk-empty-state size="sm" icon="external-link" title="No webhooks yet"
+          description="Create one to receive content events." />
+      }
+    </div>
+    }
+    <button mkButton tone="primary" (click)="newWebhook()">New webhook</button>
+  </mk-card>
+
+  <mk-card>
+    @if (editingId() || creating()) {
+      <h2>{{ editingId() ? 'Edit webhook' : 'New webhook' }}</h2>
+      @if (info(); as i) { <mk-alert tone="info" style="margin-bottom:var(--mk-space-3)">{{ i }}</mk-alert> }
+      <div class="form">
+        <mk-form-field label="Payload URL" hint="POST target; HMAC-SHA256 signed with x-mk-signature.">
+          <input mkInput [value]="url()" (input)="s($event.target, url.set)" />
+        </mk-form-field>
+        <mk-form-field label="Description">
+          <input mkInput [value]="description()" (input)="s($event.target, description.set)" />
+        </mk-form-field>
+        <div>
+          <span class="muted">Events</span>
+          <div class="events">
+            @for (e of allEvents; track e) {
+              <label class="evt"><span>{{ e }}</span>
+                <mk-switch [checked]="hasEvent(e)" (checkedChange)="toggleEvent(e, $event)" /></label>
+            }
+          </div>
+        </div>
+        <div class="evt"><span>Enabled</span><mk-switch [checked]="enabled()" (checkedChange)="enabled.set($event)" /></div>
+        <div class="actions">
+          <button mkButton tone="primary" [disabled]="!url().trim() || busy()" [loading]="busy()" (click)="save()">
+            {{ editingId() ? 'Update' : 'Create' }}
+          </button>
+          @if (editingId()) { <button mkButton variant="outline" (click)="test()">Send test</button> }
+        </div>
+      </div>
+
+      @if (active(); as w) {
+        <h3>Signing secret</h3>
+        <code class="muted">{{ w.secret }}</code>
+        <div class="actions" style="margin-top:var(--mk-space-2)">
+          <button mkButton variant="outline" size="sm" tone="danger" (click)="rotate()">Rotate secret</button>
+        </div>
+        <h3>Recent deliveries</h3>
+        <div class="deliveries">
+          @for (d of deliveries(); track d.id) {
+            <div class="drow">
+              <mk-badge [tone]="d.success ? 'success' : 'danger'" variant="soft">
+                {{ d.success ? 'ok' : 'fail' }}{{ d.statusCode ? ' ' + d.statusCode : '' }}
+              </mk-badge>
+              <span>{{ d.event }}</span>
+              <span class="muted">attempt {{ d.attempt }}</span>
+              @if (d.error) { <span class="muted">{{ d.error }}</span> }
+              <button mkButton variant="ghost" size="sm" [tone]="d.success ? 'neutral' : 'danger'"
+                      style="margin-left:auto" (click)="retryDelivery(d.id)">Retry</button>
+            </div>
+          } @empty {
+            <mk-empty-state size="sm" icon="bell" title="No deliveries yet"
+              description="Send a test ping to see delivery attempts here." />
+          }
+        </div>
+      }
+    } @else {
+      <p class="muted">Select a webhook, or create one.</p>
+    }
+  </mk-card>
+</div>

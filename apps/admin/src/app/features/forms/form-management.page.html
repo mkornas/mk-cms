@@ -1,0 +1,128 @@
+<mk-page-header heading="Forms" description="Build form fields, toggle forms on or off, and browse submissions." />
+@if (error(); as m) { <mk-alert tone="danger" style="margin-bottom:var(--mk-space-4)">{{ m }}</mk-alert> }
+
+<div class="layout">
+  <mk-card>
+    <div class="row">
+      <h2 style="margin:0">Forms</h2>
+      <button mkButton size="sm" tone="primary" (click)="startCreate()">New form</button>
+    </div>
+    @if (showSkeleton()) {
+      <mk-skeleton-preset preset="list" [rows]="6" loadingLabel="Loading forms…" />
+    } @else {
+    <div class="list">
+      @for (f of forms(); track f.id) {
+        <div class="item" [attr.data-active]="activeSlug() === f.slug" (click)="select(f)"
+             role="button" tabindex="0"
+             (keydown.enter)="select(f)" (keydown.space)="$event.preventDefault(); select(f)">
+          <span>{{ f.name }} <small>/{{ f.slug }}</small></span>
+          <span style="display:flex;align-items:center;gap:var(--mk-space-2)">
+            @if (!f.enabled) { <mk-badge tone="neutral" variant="soft">off</mk-badge> }
+            <button mkButton variant="ghost" size="sm" tone="danger" (click)="deleteForm(f, $event)">Delete</button>
+          </span>
+        </div>
+      } @empty {
+        <mk-empty-state size="sm" icon="edit" title="No forms yet"
+          description="Create your first form to start collecting submissions." />
+      }
+    </div>
+    }
+  </mk-card>
+
+  <mk-card>
+    @if (creating()) {
+      <h2>New form</h2>
+      <div class="create-form">
+        <mk-form-field label="Name">
+          <input mkInput [value]="cfName()" (input)="setSig($event.target, cfName.set)" placeholder="Contact" />
+        </mk-form-field>
+        <mk-form-field label="Slug" hint="URL-safe identifier, e.g. contact">
+          <input mkInput [value]="cfSlug()" (input)="setSig($event.target, cfSlug.set)" placeholder="contact" />
+        </mk-form-field>
+        <div style="display:flex;gap:var(--mk-space-2)">
+          <button mkButton tone="primary" [disabled]="creatingForm()" [loading]="creatingForm()" (click)="createForm()">Create form</button>
+          <button mkButton variant="ghost" (click)="creating.set(false)">Cancel</button>
+        </div>
+      </div>
+    } @else if (active(); as f) {
+      <div class="row">
+        <h2 style="margin:0">{{ f.name }} <small class="muted">/{{ f.slug }}</small></h2>
+        <label style="display:flex;align-items:center;gap:var(--mk-space-2)">
+          <span class="muted">Enabled</span>
+          <mk-switch [checked]="f.enabled" (checkedChange)="toggleEnabled(f, $event)" />
+        </label>
+      </div>
+
+      <h3>Fields</h3>
+      @for (fl of editFields(); track $index) {
+        <div class="fld">
+          <mk-form-field [label]="'Key: ' + fl.key">
+            <input mkInput [value]="fl.label" (input)="patchField($index, { label: $any($event.target).value })" />
+          </mk-form-field>
+          <mk-form-field label="Type">
+            <mk-select [options]="typeOptions()" [value]="fl.type"
+              (valueChange)="patchField($index, { type: $any($event) })" />
+          </mk-form-field>
+          <label class="req">
+            <mk-switch [checked]="fl.required" (checkedChange)="patchField($index, { required: $event })" />
+            Required
+          </label>
+          <div class="ops">
+            <button mkButton variant="ghost" size="sm" [disabled]="$first" (click)="moveField($index, -1)" title="Move up">↑</button>
+            <button mkButton variant="ghost" size="sm" [disabled]="$last" (click)="moveField($index, 1)" title="Move down">↓</button>
+            <button mkButton variant="ghost" size="sm" tone="danger" (click)="removeField($index)" title="Remove">✕</button>
+          </div>
+        </div>
+      } @empty {
+        <mk-empty-state size="sm" icon="menu" title="No fields yet"
+          description="Add one below to define what this form collects." />
+      }
+
+      <div class="addfld">
+        <mk-form-field label="Key">
+          <input mkInput [value]="nfKey()" (input)="setSig($event.target, nfKey.set)" placeholder="email" />
+        </mk-form-field>
+        <mk-form-field label="Label">
+          <input mkInput [value]="nfLabel()" (input)="setSig($event.target, nfLabel.set)" placeholder="Email address" />
+        </mk-form-field>
+        <mk-form-field label="Type">
+          <mk-select [options]="typeOptions()" [value]="nfType()" (valueChange)="nfType.set($any($event))" />
+        </mk-form-field>
+        <label class="req">
+          <mk-switch [checked]="nfRequired()" (checkedChange)="nfRequired.set($event)" /> Required
+        </label>
+        <button mkButton (click)="addField()">Add field</button>
+      </div>
+
+      @if (fieldsDirty()) {
+        <div class="dirty-bar">
+          <button mkButton tone="primary" [loading]="savingFields()" (click)="saveFields()">Save fields</button>
+          <button mkButton variant="ghost" (click)="resetFields()">Reset</button>
+          <span class="muted">You have unsaved field changes.</span>
+        </div>
+      }
+
+      <h3>Submissions ({{ submissions().length }})</h3>
+      <div class="subs">
+        @for (sub of submissions(); track sub.id) {
+          <div class="sub">
+            <div class="subhead">
+              <span class="muted">{{ fmt(sub.createdAt) }}</span>
+              <button mkButton variant="ghost" size="sm" tone="danger" (click)="deleteSub(sub)">Delete</button>
+            </div>
+            <mk-description-list layout="grid" [divided]="true">
+              @for (e of entries(sub.data); track e.k) {
+                <mk-desc-item [term]="e.k">{{ e.v }}</mk-desc-item>
+              }
+            </mk-description-list>
+          </div>
+        } @empty {
+          <mk-empty-state size="sm" icon="bell" title="No submissions yet"
+            description="Submissions to this form will appear here." />
+        }
+      </div>
+    } @else {
+      <p class="muted">Select a form to build its fields and view submissions, or create a new one.</p>
+    }
+  </mk-card>
+</div>

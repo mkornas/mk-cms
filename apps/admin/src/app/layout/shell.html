@@ -1,0 +1,201 @@
+<mk-loading-bar />
+
+<mk-app-shell #appShell>
+  <div mkAppHeader class="shell-header">
+    <button
+      mkButton
+      variant="ghost"
+      size="sm"
+      iconOnly
+      aria-label="Collapse or expand the sidebar"
+      mkTooltip="Collapse sidebar"
+      (click)="appShell.toggleCollapsed()"
+    >
+      <mk-icon name="sidebar" />
+    </button>
+
+    <strong class="shell-brand">mk<span class="shell-brand__dash" aria-hidden="true">—</span>cms</strong>
+
+    @if (session.sites().length > 1) {
+      <button
+        mkButton
+        variant="ghost"
+        size="sm"
+        class="shell-site"
+        mkTooltip="Switch site"
+        [mkMenuTriggerFor]="siteMenu"
+      >
+        <mk-icon name="globe" size="sm" />
+        {{ siteName() }}
+        <mk-icon name="chevron-down" size="sm" />
+      </button>
+      <mk-menu #siteMenu>
+        @for (s of session.sites(); track s.siteId) {
+          <mk-menu-item (action)="switchSite(s.siteSlug)">
+            @if (s.siteSlug === session.activeSiteSlug()) {
+              <mk-icon mkMenuItemIcon name="check" size="sm" />
+            }
+            {{ s.siteName ?? s.siteSlug }}
+          </mk-menu-item>
+        }
+      </mk-menu>
+    } @else {
+      <span class="shell-site shell-site--static" title="Active site">
+        <mk-icon name="globe" size="sm" />
+        {{ siteName() }}
+      </span>
+    }
+
+    <span class="shell-spacer"></span>
+
+    <input
+      mkInput
+      type="search"
+      class="shell-search"
+      placeholder="Search content…  (⌘K for commands)"
+      aria-label="Search content"
+      (keydown.enter)="submitSearch($event.target)"
+    />
+
+    <button
+      mkButton
+      variant="ghost"
+      size="sm"
+      iconOnly
+      [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+      [mkTooltip]="theme.isDark() ? 'Light theme' : 'Dark theme'"
+      (click)="theme.toggle()"
+    >
+      <mk-icon [name]="theme.isDark() ? 'sun' : 'moon'" />
+    </button>
+
+    <button
+      mkButton
+      variant="ghost"
+      size="sm"
+      class="shell-user"
+      aria-label="Your account"
+      [mkMenuTriggerFor]="userMenu"
+    >
+      <mk-avatar [name]="userName() || '?'" size="sm" />
+      <span class="shell-user__name">{{ userName() }}</span>
+      <mk-icon name="chevron-down" size="sm" />
+    </button>
+    <mk-menu #userMenu>
+      <mk-menu-item (action)="go('/profile')">
+        <mk-icon mkMenuItemIcon name="user" size="sm" />
+        Your profile
+      </mk-menu-item>
+      <mk-menu-item (action)="theme.toggle()">
+        <mk-icon mkMenuItemIcon [name]="theme.isDark() ? 'sun' : 'moon'" size="sm" />
+        {{ theme.isDark() ? 'Light theme' : 'Dark theme' }}
+      </mk-menu-item>
+      <mk-menu-item [danger]="true" (action)="logout()">
+        <mk-icon mkMenuItemIcon name="log-out" size="sm" />
+        Sign out
+      </mk-menu-item>
+    </mk-menu>
+  </div>
+
+  <mk-nav-list mkAppSidebar>
+    <mk-nav-item label="Dashboard" [active]="isActive('/dashboard')" (action)="go('/dashboard')">
+      <mk-icon mkNavIcon name="home" size="sm" />
+    </mk-nav-item>
+
+    <!-- Author-facing surfaces come first: this is where day-to-day work happens. -->
+    <mk-nav-group label="Content">
+      @for (ct of contentTypes(); track ct.slug) {
+        <mk-nav-item
+          [label]="ct.name"
+          [active]="isActive('/content/' + ct.slug)"
+          (action)="go('/content/' + ct.slug)"
+        >
+          <mk-icon mkNavIcon name="file-text" size="sm" />
+        </mk-nav-item>
+      } @empty {
+        <mk-nav-item label="No content types" [disabled]="true" />
+      }
+      <mk-nav-item label="Media" [active]="isActive('/library')" (action)="go('/library')">
+        <mk-icon mkNavIcon name="image" size="sm" />
+      </mk-nav-item>
+      <mk-nav-item label="Scheduled" [active]="isActive('/scheduled')" (action)="go('/scheduled')">
+        <mk-icon mkNavIcon name="clock" size="sm" />
+      </mk-nav-item>
+      <mk-nav-item
+        label="Categories &amp; tags"
+        [active]="isActive('/taxonomies')"
+        (action)="go('/taxonomies')"
+      >
+        <mk-icon mkNavIcon name="tag" size="sm" />
+      </mk-nav-item>
+      <mk-nav-item label="Menus" [active]="isActive('/menus')" (action)="go('/menus')">
+        <mk-icon mkNavIcon name="menu" size="sm" />
+      </mk-nav-item>
+    </mk-nav-group>
+
+    @if (canManageSites()) {
+      <mk-nav-group label="Administration" [collapsible]="true">
+        <mk-nav-item label="Users" [active]="isActive('/users')" (action)="go('/users')">
+          <mk-icon mkNavIcon name="user" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Roles" [active]="isActive('/roles')" (action)="go('/roles')">
+          <mk-icon mkNavIcon name="shield" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Sites" [active]="isActive('/sites')" (action)="go('/sites')">
+          <mk-icon mkNavIcon name="globe" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Plugins" [active]="isActive('/plugins')" (action)="go('/plugins')">
+          <mk-icon mkNavIcon name="plug" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item
+          label="Content types"
+          [active]="isActive('/content-types')"
+          (action)="go('/content-types')"
+        >
+          <mk-icon mkNavIcon name="layers" size="sm" />
+        </mk-nav-item>
+      </mk-nav-group>
+
+      <mk-nav-group label="Operations" [collapsible]="true">
+        <mk-nav-item label="Settings" [active]="isActive('/settings')" (action)="go('/settings')">
+          <mk-icon mkNavIcon name="settings" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="SEO" [active]="isActive('/seo')" (action)="go('/seo')">
+          <mk-icon mkNavIcon name="search" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Redirects" [active]="isActive('/redirects')" (action)="go('/redirects')">
+          <mk-icon mkNavIcon name="arrow-right" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Webhooks" [active]="isActive('/webhooks')" (action)="go('/webhooks')">
+          <mk-icon mkNavIcon name="zap" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Forms" [active]="isActive('/forms')" (action)="go('/forms')">
+          <mk-icon mkNavIcon name="inbox" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item label="Activity log" [active]="isActive('/audit')" (action)="go('/audit')">
+          <mk-icon mkNavIcon name="eye" size="sm" />
+        </mk-nav-item>
+        <mk-nav-item
+          label="Import from WordPress"
+          [active]="isActive('/import')"
+          (action)="go('/import')"
+        >
+          <mk-icon mkNavIcon name="download" size="sm" />
+        </mk-nav-item>
+      </mk-nav-group>
+    }
+  </mk-nav-list>
+
+  <router-outlet />
+</mk-app-shell>
+
+<!-- ⌘K anywhere. Each command carries its own run() action. -->
+<mk-command-palette
+  [hotkey]="true"
+  [commands]="commands()"
+  placeholder="Search commands… (⌘K)"
+  emptyMessage="No matching commands"
+/>
+
+<!-- Global toast host: success/error feedback for every mutation. -->
+<mk-toast-container />

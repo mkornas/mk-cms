@@ -1,0 +1,24 @@
+<mk-page-header
+  heading="Roles &amp; capabilities"
+  description="Every role and what it can do. System roles are shared templates (read-only); custom roles are yours to manage. Click a role to see or edit its capabilities."
+>
+  <div mkPageHeaderActions>
+    <button mkButton tone="primary" (click)="openNew()">New role</button>
+  </div>
+</mk-page-header>
+
+@if (showSkeleton()) {
+  <mk-skeleton-preset preset="table" [rows]="6" [columns]="4" loadingLabel="Loading roles…" />
+} @else {
+  <mk-table
+    [columns]="columns"
+    [data]="rows()"
+    trackKey="id"
+    [hover]="true"
+    [zebra]="true"
+    [clickableRows]="true"
+    (rowClick)="openRow($event)"
+    emptyMessage="No roles found."
+    [stackAt]="640"
+  />
+}

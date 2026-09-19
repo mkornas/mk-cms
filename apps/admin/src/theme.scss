@@ -1,0 +1,339 @@
+/* =========================================================================
+ * mk-cms admin theme — "pressroom"
+ * -------------------------------------------------------------------------
+ * A token overlay on top of @mk-kit/ui. The palette is the shared DNA of
+ * the studio look the admin was designed for: warm ink, bone paper and
+ * a signal yellow. Loaded AFTER the kit's styles.css, BEFORE styles.scss.
+ *
+ *  - Primary actions are ink (editorial black), not a SaaS blue.
+ *  - Yellow #ffd400 is reserved for signals only: focus, loading, the
+ *    active-nav tick, text selection. Semantic colors stay untouched.
+ *  - The shell (header + sidebar) is an "ink frame" in both themes; the
+ *    content well stays paper. Implemented as scoped token overrides, so
+ *    every kit component inside the frame adapts on its own.
+ * ========================================================================= */
+
+/* -------------------------------------------------------------------------
+ * 1. Shared tokens — type, shape, signals
+ * ---------------------------------------------------------------------- */
+:root {
+  --mk-font-sans: 'Hanken Grotesk Variable', system-ui, -apple-system, 'Segoe UI',
+    Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --mk-font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono',
+    'Cascadia Code', Consolas, monospace;
+  /* App-level token: display face for titles, brand, big numbers. */
+  --app-font-display: 'Bricolage Grotesque Variable', var(--mk-font-sans);
+
+  /* The one non-negotiable brand hue. */
+  --app-signal: #ffd400;
+  --app-signal-ink: #4a4207; /* readable ink on signal-tinted surfaces */
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Light theme — bone paper + warm ink
+ * ---------------------------------------------------------------------- */
+:root {
+  /* Surfaces: warm paper instead of blue-gray. */
+  --mk-bg: #f2efe8;
+  --mk-surface: #fbfaf6;
+  --mk-surface-2: #f1eee6;
+  --mk-surface-3: #e9e5d9;
+  --mk-surface-inverse: #16150f;
+  --mk-overlay-scrim: rgba(22, 21, 15, 0.45);
+
+  /* Text: warm ink ramp (from the sites' #1a1a17 / #55514a / #8a8678). */
+  --mk-text: #16150f;
+  --mk-text-muted: #5d5949;
+  --mk-text-subtle: #8a8678;
+  --mk-text-inverse: #fbfaf6;
+  --mk-text-disabled: #b5b1a2;
+
+  /* Borders: warm. */
+  --mk-border: #e2ded1;
+  --mk-border-strong: #c7c2b0;
+  --mk-border-subtle: #ece9de;
+
+  /* Interaction overlays. */
+  --mk-hover-overlay: rgba(22, 21, 15, 0.045);
+  --mk-active-overlay: rgba(22, 21, 15, 0.09);
+  --mk-selected-bg: #f7f0c8;
+  --mk-selected-text: var(--app-signal-ink);
+
+  /* Primary = ink. Buttons, checks, switches go editorial black. */
+  --mk-primary: #1a1915;
+  --mk-primary-hover: #302e26;
+  --mk-primary-active: #454237;
+  --mk-primary-contrast: #f7f5f0;
+  --mk-primary-subtle: #eceade;
+  --mk-primary-subtle-hover: #e3e0d1;
+  --mk-primary-subtle-text: #3a3733;
+
+  /* Neutral tone, warmed. */
+  --mk-neutral-subtle: #efece3;
+  --mk-neutral-subtle-hover: #e6e2d5;
+  --mk-neutral-subtle-text: #45412f;
+
+  /* Focus: dark amber (yellow itself is too faint on paper). */
+  --mk-focus-ring: rgba(158, 124, 0, 0.65);
+
+  /* Warm-ink shadows. */
+  --mk-shadow-xs: 0 1px 2px rgba(35, 31, 12, 0.06);
+  --mk-shadow-sm: 0 1px 3px rgba(35, 31, 12, 0.08), 0 1px 2px rgba(35, 31, 12, 0.05);
+  --mk-shadow-md: 0 4px 12px rgba(35, 31, 12, 0.1), 0 2px 4px rgba(35, 31, 12, 0.05);
+  --mk-shadow-lg: 0 12px 28px rgba(35, 31, 12, 0.14), 0 4px 8px rgba(35, 31, 12, 0.07);
+  --mk-shadow-xl: 0 24px 48px rgba(35, 31, 12, 0.2), 0 8px 16px rgba(35, 31, 12, 0.09);
+
+  /* Backdrops / misc, warmed. */
+  --mk-skeleton-base: #e9e5d9;
+  --mk-skeleton-shine: #f4f1e9;
+  --mk-scrollbar-thumb: #c7c2b0;
+  --mk-scrollbar-thumb-hover: #a8a390;
+  --mk-code-bg: #f1eee6;
+
+  /* Charts: replace the indigo lead with a dark gold; rest stays validated. */
+  --mk-chart-1: #9e7c00;
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Dark theme — warm ink night (the sites' #0e0e12 family, warmed)
+ *    Mirrors the kit's two dark selectors exactly.
+ * ---------------------------------------------------------------------- */
+@mixin app-dark-tokens {
+  --mk-bg: #0f0e0b;
+  --mk-surface: #161511;
+  --mk-surface-2: #1e1c16;
+  --mk-surface-3: #28251c;
+  --mk-surface-inverse: #edeadf;
+  --mk-overlay-scrim: rgba(5, 4, 2, 0.6);
+
+  --mk-text: #edeadf;
+  --mk-text-muted: #a5a08d;
+  --mk-text-subtle: #7a7565;
+  --mk-text-inverse: #16150f;
+  --mk-text-disabled: #55513f;
+
+  --mk-border: #2a271d;
+  --mk-border-strong: #3d3929;
+  --mk-border-subtle: #211f17;
+
+  --mk-hover-overlay: rgba(255, 250, 235, 0.05);
+  --mk-active-overlay: rgba(255, 250, 235, 0.09);
+  --mk-selected-bg: #2c2710;
+  --mk-selected-text: #f2d64b;
+
+  /* Primary = bone; dark mode buttons invert to paper-on-ink. */
+  --mk-primary: #edeadf;
+  --mk-primary-hover: #f7f5ee;
+  --mk-primary-active: #dcd8c8;
+  --mk-primary-contrast: #16150f;
+  --mk-primary-subtle: #28251c;
+  --mk-primary-subtle-hover: #322e22;
+  --mk-primary-subtle-text: #dcd8c8;
+
+  --mk-neutral-subtle: #23211a;
+  --mk-neutral-subtle-hover: #2c2a20;
+  --mk-neutral-subtle-text: #c9c5b4;
+
+  --mk-focus-ring: rgba(255, 212, 0, 0.5);
+
+  --mk-skeleton-base: #23211a;
+  --mk-skeleton-shine: #2f2c22;
+  --mk-scrollbar-thumb: #3d3929;
+  --mk-scrollbar-thumb-hover: #55513f;
+  --mk-code-bg: #1e1c16;
+
+  --mk-chart-1: #e5c437;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mk-theme='light']) {
+    @include app-dark-tokens;
+  }
+}
+[data-mk-theme='dark'] {
+  @include app-dark-tokens;
+}
+
+/* -------------------------------------------------------------------------
+ * 4. The ink frame — header + sidebar carry the sites' ink, in BOTH themes.
+ *    Scoped token overrides: every kit component inside adapts by itself.
+ * ---------------------------------------------------------------------- */
+.mk-app-shell__header,
+.mk-app-shell__sidebar {
+  --mk-bg: #12110d;
+  --mk-surface: #12110d;
+  --mk-surface-2: #1b1a14;
+  --mk-surface-3: #24221a;
+  --mk-text: #f2f0e7;
+  --mk-text-muted: #b3ae9c;
+  --mk-text-subtle: #817c6b;
+  --mk-text-disabled: #55513f;
+  --mk-border: #262419;
+  --mk-border-strong: #3d3929;
+  --mk-border-subtle: #1e1c15;
+  --mk-hover-overlay: rgba(255, 250, 235, 0.06);
+  --mk-active-overlay: rgba(255, 250, 235, 0.1);
+  --mk-selected-bg: #262313;
+  --mk-selected-text: #f6e27a;
+  --mk-primary: #edeadf;
+  --mk-primary-contrast: #16150f;
+  --mk-primary-subtle: #262313;
+  --mk-primary-subtle-text: #f6e27a;
+  --mk-neutral-subtle: #23211a;
+  --mk-neutral-subtle-hover: #2c2a20;
+  --mk-neutral-subtle-text: #c9c5b4;
+  --mk-focus-ring: rgba(255, 212, 0, 0.55);
+  --mk-scrollbar-thumb: #3d3929;
+  --mk-scrollbar-thumb-hover: #55513f;
+  --mk-skeleton-base: #23211a;
+  --mk-skeleton-shine: #2f2c22;
+
+  background: var(--mk-surface);
+  color: var(--mk-text); /* inherited text (wordmark…) must not stay page-ink */
+  color-scheme: dark; /* native controls (search input) render dark inside */
+}
+
+/* Seam between frame and paper: drop the light hairlines, keep depth. */
+.mk-app-shell__header {
+  border-bottom: none;
+  box-shadow: inset 0 -1px 0 rgba(255, 250, 235, 0.07);
+}
+.mk-app-shell__sidebar {
+  border-inline-end: none;
+}
+
+/* In dark mode the content well is ink too — keep a whisper of a seam. */
+[data-mk-theme='dark'] .mk-app-shell__sidebar,
+:root:not([data-mk-theme='light']) .mk-app-shell__sidebar {
+  box-shadow: inset -1px 0 0 rgba(255, 250, 235, 0.05);
+}
+
+/* --- Sidebar nav voice -------------------------------------------------- */
+
+/* Group labels: quiet warm caps. */
+.mk-app-shell__sidebar .mk-nav-group__label {
+  color: var(--mk-text-subtle);
+  font-size: 0.6875rem;
+  font-weight: var(--mk-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Active item: bone text on ink + the yellow bookmark tick. */
+.mk-app-shell__sidebar .mk-nav-item__link {
+  position: relative;
+}
+.mk-app-shell__sidebar .mk-nav-item--active > .mk-nav-item__link {
+  background: var(--mk-selected-bg);
+  color: #f7f5f0;
+  font-weight: var(--mk-font-weight-semibold);
+}
+.mk-app-shell__sidebar .mk-nav-item--active > .mk-nav-item__link::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  translate: 0 -50%;
+  width: 3px;
+  height: 1.125rem;
+  border-radius: var(--mk-radius-pill);
+  background: var(--app-signal);
+}
+.mk-app-shell__sidebar .mk-nav-item--active > .mk-nav-item__link .mk-nav-item__icon {
+  color: var(--app-signal);
+}
+
+/* -------------------------------------------------------------------------
+ * 5. Display type — the voice of the pages
+ * ---------------------------------------------------------------------- */
+.mk-page-header__title,
+.mk-stat-card__value,
+.mk-dialog__title,
+.shell-brand,
+.login-title {
+  font-family: var(--app-font-display);
+  letter-spacing: var(--mk-letter-spacing-tight);
+}
+
+.mk-page-header__title {
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Signals & seasoning
+ * ---------------------------------------------------------------------- */
+
+/* The loading bar is the yellow signal, always. */
+.mk-loading-bar__fill {
+  background-color: var(--app-signal);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--app-signal) 70%, transparent);
+}
+
+/* Native controls (range sliders, date fields…) follow the ink, not
+   browser-default blue. */
+html {
+  accent-color: var(--mk-primary);
+}
+
+/* Text selection carries the brand. */
+::selection {
+  background: color-mix(in srgb, var(--app-signal) 55%, transparent);
+  color: var(--mk-text);
+}
+
+/* -------------------------------------------------------------------------
+ * 7. Article voice — the block editor reads like the published article.
+ *    Covers both the editing blocks and mk-block-renderer output; scoped to
+ *    prose blocks so heading/UI chrome sizes are untouched.
+ * ---------------------------------------------------------------------- */
+
+/* Reading-size prose while writing… */
+mk-paragraph-block .mk-rich-text__editable,
+.mk-list-block__item .mk-rich-text__editable,
+.mk-quote-block__quote .mk-rich-text__editable,
+/* …and when rendered. */
+.mk-r-paragraph,
+.mk-r-list {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+/* On the entry editor's writing canvas the block editor loses its input-box
+   chrome — prose sits directly on the page; hover/focus block surfaces are
+   the only editing chrome. */
+.prose-field > mk-block-editor {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Headings carry the display face, drafting and published alike. */
+.mk-heading-block__text--h1,
+.mk-heading-block__text--h2,
+.mk-heading-block__text--h3,
+.mk-heading-block__text--h4,
+.mk-r-heading {
+  font-family: var(--app-font-display);
+  letter-spacing: var(--mk-letter-spacing-tight);
+}
+
+/* Routed pages rise gently into place. */
+mk-app-shell router-outlet + * {
+  animation: app-page-enter var(--mk-duration-slow) var(--mk-ease-out);
+}
+@keyframes app-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  mk-app-shell router-outlet + * {
+    animation: none;
+  }
+}

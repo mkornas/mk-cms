@@ -1,0 +1,37 @@
+<mk-page-header heading="Sites" description="Each site is a tenant with its own domains, members and content.">
+  <div mkPageHeaderActions class="head-actions">
+    <button mkButton tone="primary" (click)="openNew()">New site</button>
+  </div>
+</mk-page-header>
+
+@if (selected().length) {
+  <div class="bulk">
+    <span class="bulk__count">{{ selected().length }} selected</span>
+    <button mkButton size="sm" variant="outline" tone="danger" [loading]="busy()" (click)="bulkDelete()">
+      Delete
+    </button>
+  </div>
+}
+
+@if (showSkeleton()) {
+  <mk-skeleton-preset preset="table" [rows]="6" [columns]="4" loadingLabel="Loading sites…" />
+} @else if (sites().length === 0) {
+  <mk-empty-state icon="globe" title="No sites yet" description="Create your first site to start managing content.">
+    <div mkEmptyStateActions>
+      <button mkButton tone="primary" (click)="openNew()">New site</button>
+    </div>
+  </mk-empty-state>
+} @else {
+  <mk-table
+    [columns]="columns"
+    [data]="rows()"
+    trackKey="id"
+    [selectable]="true"
+    [(selected)]="selected"
+    [hover]="true"
+    [zebra]="true"
+    [clickableRows]="true"
+    (rowClick)="openEdit($event)"
+    [stackAt]="640"
+  />
+}

@@ -1,0 +1,95 @@
+/* App-level global styles. The @mk-kit/ui theme (tokens + `.mk-app` base) is
+   loaded ahead of this file via angular.json `styles`. Add only app-specific
+   globals here — component styling belongs in each component and uses --mk-*
+   tokens. */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Routed-page width discipline
+   ---------------------------------------------------------------------------
+   The kit's app-shell main region (`.mk-app-shell__main`) pads content with
+   `--mk-space-6` but never caps its width, so on wide screens every page used
+   to stretch edge-to-edge. Cap the measure centrally instead: the routed page
+   element (the first sibling after each `<router-outlet>`) becomes a centered
+   column. Content/list/dashboard pages get a wide reading column (the 90rem
+   default); form & detail pages opt into a tighter, more legible measure by
+   setting `--page-max` on their `:host` (or adding `.page--form`).
+
+   Scoped to `mk-app-shell` on purpose: the routed page inside the shell is the
+   element after the shell's *own* router-outlet. The top-level app router-outlet
+   (which renders the shell itself, and the login/set-password pages) is NOT
+   inside mk-app-shell, so it stays uncapped — otherwise the whole app, sidebar
+   included, would float centered on wide screens. */
+mk-app-shell router-outlet + * {
+  display: block;
+  max-width: var(--page-max, 90rem);
+  margin-inline: auto;
+}
+
+/* Opt-in narrower measures for form/detail-heavy pages. Apply on a page root
+   (e.g. `:host { --page-max: 64rem; }` or class on the page's outer element). */
+.page--form {
+  --page-max: 64rem;
+}
+.page--narrow {
+  --page-max: 44rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Shared page primitives
+   ---------------------------------------------------------------------------
+   Small, opt-in utility classes so every page spaces its header, sections and
+   action rows the same way without re-declaring the same CSS in each component.
+   These are intentionally minimal — anything richer belongs in a kit component
+   (mk-page-header, mk-card, mk-empty-state, mk-table, …). */
+
+/* Vertical rhythm between the page header and stacked sections. */
+.page-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mk-space-6);
+}
+
+/* A labelled block within a page: a small heading over its content. */
+.page-section-title {
+  margin: 0 0 var(--mk-space-3);
+  font-size: var(--mk-font-size-lg);
+  font-weight: var(--mk-font-weight-semibold, 600);
+}
+
+/* Form action row: keeps submit/cancel buttons at their natural width (never
+   stretched to fill a grid/flex column) and aligned consistently. Use this to
+   wrap the buttons at the end of any form so they don't span the full width. */
+.mk-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mk-space-2);
+  align-items: center;
+  margin-top: var(--mk-space-2);
+}
+.mk-form-actions--end {
+  justify-content: flex-end;
+}
+
+/* A vertical stack of form fields with consistent spacing, constrained to a
+   readable single-column measure. Buttons inside should live in .mk-form-actions. */
+.mk-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mk-space-4);
+  max-width: 34rem;
+}
+
+/* Muted helper / secondary text. */
+.mk-muted {
+  color: var(--mk-text-muted);
+  font-size: var(--mk-font-size-sm);
+}

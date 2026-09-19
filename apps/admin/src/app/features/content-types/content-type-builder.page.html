@@ -1,0 +1,138 @@
+<mk-page-header
+  heading="Content types"
+  description="Define content types and manage their field schema."
+/>
+
+@if (error(); as msg) {
+  <mk-alert tone="danger" style="margin-bottom: var(--mk-space-4)">{{ msg }}</mk-alert>
+}
+
+<div class="layout">
+  <!-- Content types -->
+  <mk-card>
+    <h2>All types</h2>
+    @if (showSkeleton()) {
+      <mk-skeleton-preset preset="list" [rows]="6" loadingLabel="Loading content types…" />
+    } @else if (types().length === 0) {
+      <mk-empty-state
+        class="type-table"
+        icon="settings"
+        title="No content types yet"
+        description="Create your first content type below."
+        size="sm"
+      />
+    } @else {
+      <mk-table
+        class="type-table"
+        [columns]="typeColumns"
+        [data]="typeRows()"
+        trackKey="id"
+        [hover]="true"
+        [clickableRows]="true"
+        (rowClick)="selectType($event)"
+        emptyMessage="No content types."
+        [stackAt]="480"
+      />
+    }
+
+    <h2>New type</h2>
+    <div class="new-form">
+      <mk-form-field label="Name" hint="Slug is derived from the name.">
+        <input mkInput placeholder="e.g. Product"
+          [value]="newName()" (input)="set($event.target, newName.set)" />
+      </mk-form-field>
+      <mk-form-field label="Description">
+        <input mkInput [value]="newDesc()" (input)="set($event.target, newDesc.set)" />
+      </mk-form-field>
+      <div class="mk-form-actions">
+        <button mkButton tone="primary" [loading]="busy()" [disabled]="busy() || !newName().trim()" (click)="createType()">
+          Create type
+        </button>
+      </div>
+    </div>
+  </mk-card>
+
+  <!-- Selected type -->
+  <mk-card>
+    @if (active(); as t) {
+      <h2>{{ t.name }} <small style="color: var(--mk-text-muted)">/{{ t.slug }}</small></h2>
+
+      <div class="detail-fields">
+        <mk-form-field label="Name">
+          <input mkInput [value]="editName()" (input)="set($event.target, editName.set)" />
+        </mk-form-field>
+        <mk-form-field label="Description">
+          <input mkInput [value]="editDesc()" (input)="set($event.target, editDesc.set)" />
+        </mk-form-field>
+        <div class="mk-form-actions">
+          @if (!t.isCore) {
+            <button mkButton variant="ghost" tone="danger" (click)="deleteType(t)">Delete type</button>
+          }
+          <button mkButton tone="primary" (click)="saveType()">Save type</button>
+        </div>
+      </div>
+
+      <h2>Fields</h2>
+      <div class="field-list">
+        @for (f of sortedFields(); track f.key; let i = $index) {
+          <div class="field-row">
+            <span class="key">{{ f.key }}</span>
+            <span class="name">{{ f.name }}</span>
+            <mk-badge variant="soft">{{ f.type }}</mk-badge>
+            @if (f.required) { <mk-badge tone="warning" variant="soft">required</mk-badge> }
+            <span class="spacer"></span>
+            <button mkButton variant="ghost" size="sm" [disabled]="i === 0"
+              (click)="moveField(i, -1)" aria-label="Move up">↑</button>
+            <button mkButton variant="ghost" size="sm" [disabled]="i === sortedFields().length - 1"
+              (click)="moveField(i, 1)" aria-label="Move down">↓</button>
+            <button mkButton variant="ghost" size="sm" (click)="editField(f)">Edit</button>
+            <button mkButton variant="ghost" size="sm" tone="danger" (click)="removeField(f)">Remove</button>
+          </div>
+        } @empty {
+          <mk-empty-state icon="plus" title="No fields yet" description="Add the first field below." size="sm" />
+        }
+      </div>
+
+      <!-- Add / edit field -->
+      <div class="field-form">
+        <h3>{{ editingKey() ? 'Edit field: ' + editingKey() : 'Add field' }}</h3>
+        <div class="grid">
+          <mk-form-field label="Key" [hint]="editingKey() ? 'Immutable' : 'a-z, 0-9, _ (starts with a letter)'">
+            <input mkInput [value]="fKey()" [disabled]="!!editingKey()"
+              (input)="set($event.target, fKey.set)" />
+          </mk-form-field>
+          <mk-form-field label="Name">
+            <input mkInput [value]="fName()" (input)="set($event.target, fName.set)" />
+          </mk-form-field>
+          <mk-form-field label="Type">
+            <mk-select [options]="fieldTypeOptions()"
+              [value]="fType()" (valueChange)="fType.set(asStr($event))" />
+          </mk-form-field>
+          <div class="req">
+            <span>Required</span>
+            <mk-switch [checked]="fRequired()" (checkedChange)="fRequired.set($event)" />
+          </div>
+        </div>
+        <mk-form-field label="Config (JSON)"
+          hint="Per-type options — e.g. select: {&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;]}, relation/media: {&quot;contentType&quot;:&quot;author&quot;,&quot;multiple&quot;:true}">
+          <mk-code-editor language="json" [rows]="6"
+            [value]="fConfig()" (valueChange)="fConfig.set($event)" />
+        </mk-form-field>
+        <div class="actions">
+          <button mkButton tone="primary" [loading]="busy()" [disabled]="busy() || !fName().trim()" (click)="saveField()">
+            {{ editingKey() ? 'Update field' : 'Add field' }}
+          </button>
+          @if (editingKey()) {
+            <button mkButton variant="ghost" (click)="resetFieldForm()">Cancel</button>
+          }
+        </div>
+      </div>
+    } @else {
+      <mk-empty-state
+        icon="edit"
+        title="No content type selected"
+        description="Select a content type to edit it, or create one."
+      />
+    }
+  </mk-card>
+</div>

@@ -1,0 +1,36 @@
+{
+  "name": "@mk-cms/admin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "mk-cms admin panel — Angular 22 + @mk-kit/ui + Apollo Client + ngrx.",
+  "scripts": {
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "ng": "ng"
+  },
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "@apollo/client": "^4.2.6",
+    "@fontsource-variable/bricolage-grotesque": "^5.2.10",
+    "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@mk-kit/ui": "^0.60.0",
+    "@ngrx/signals": "^21.1.1",
+    "apollo-angular": "^14.1.0",
+    "graphql": "^16.14.2",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.0.0",
+    "@angular/cli": "^22.0.0",
+    "@angular/compiler-cli": "^22.0.0",
+    "typescript": "~6.0.2"
+  }
+}

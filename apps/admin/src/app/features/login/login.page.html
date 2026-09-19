@@ -1,0 +1,53 @@
+<div class="login-wrap">
+  <div class="login-brand" aria-hidden="true">
+    mk<span class="login-brand__dash">—</span>cms
+  </div>
+
+  <mk-card>
+    <h1 class="login-title">Sign in</h1>
+
+  @if (justInvited()) {
+    <mk-alert tone="success" style="margin-bottom: var(--mk-space-4)">
+      Password set. You can now sign in.
+    </mk-alert>
+  }
+
+  @if (error(); as msg) {
+    <mk-alert tone="danger" style="margin-bottom: var(--mk-space-4)">{{ msg }}</mk-alert>
+  }
+
+  <form (submit)="submit($event)">
+    <div class="login-fields">
+      <mk-form-field label="Email" [required]="true">
+        <input
+          mkInput
+          type="email"
+          name="email"
+          autocomplete="username"
+          [value]="email()"
+          (input)="update($event.target, email.set)"
+          required
+        />
+      </mk-form-field>
+
+      <mk-form-field label="Password" [required]="true">
+        <input
+          mkInput
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          [value]="password()"
+          (input)="update($event.target, password.set)"
+          required
+        />
+      </mk-form-field>
+    </div>
+
+    <div class="login-actions">
+      <button mkButton tone="primary" type="submit" [loading]="submitting()">
+        Sign in
+      </button>
+    </div>
+  </form>
+  </mk-card>
+</div>

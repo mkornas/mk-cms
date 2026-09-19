@@ -1,0 +1,50 @@
+<mk-page-header heading="Users" description="Users are global; grant site access separately under Sites.">
+  <div mkPageHeaderActions class="head-actions">
+    <button mkButton variant="outline" (click)="openInvite()">Invite user</button>
+    <button mkButton tone="primary" (click)="openNew()">New user</button>
+  </div>
+</mk-page-header>
+
+<div class="toolbar">
+  <input mkInput type="search" class="toolbar__filter" placeholder="Filter by name or email…"
+    [value]="filter()" (input)="setFilter($event.target)" aria-label="Filter users" />
+  <span class="toolbar__spacer"></span>
+  <span class="mk-muted">{{ visible().length }} of {{ users().length }}</span>
+</div>
+
+@if (selected().length) {
+  <div class="bulk">
+    <span class="bulk__count">{{ selected().length }} selected</span>
+    <button mkButton size="sm" variant="outline" tone="danger" [loading]="busy()" (click)="bulkDelete()">
+      Delete
+    </button>
+  </div>
+}
+
+@if (showSkeleton()) {
+  <mk-skeleton-preset preset="table" [rows]="6" [columns]="4" loadingLabel="Loading users…" />
+} @else if (users().length === 0) {
+  <mk-empty-state icon="user" title="No users yet" description="Create the first user or invite someone by email.">
+    <div mkEmptyStateActions>
+      <button mkButton tone="primary" (click)="openNew()">New user</button>
+    </div>
+  </mk-empty-state>
+} @else {
+  <mk-table
+    [columns]="columns"
+    [data]="visible()"
+    trackKey="id"
+    [selectable]="true"
+    [(selected)]="selected"
+    [hover]="true"
+    [zebra]="true"
+    [clickableRows]="true"
+    (rowClick)="openEdit($event)"
+    emptyMessage="No users match your filter."
+    [stackAt]="640"
+  >
+    <ng-template mkTableCell="status" let-value>
+      <mk-tag [tone]="statusTone(value)" variant="soft">{{ value }}</mk-tag>
+    </ng-template>
+  </mk-table>
+}

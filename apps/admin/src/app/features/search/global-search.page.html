@@ -1,0 +1,81 @@
+<div class="search">
+  <div class="search-head">
+    <mk-form-field label="Search content">
+      <input
+        mkInput
+        class="search-box"
+        type="search"
+        placeholder="Search titles and content…"
+        [value]="query()"
+        (input)="onInput($event.target)"
+        autofocus
+      />
+    </mk-form-field>
+
+    @if (contentTypes().length) {
+      <div class="filters">
+        <button
+          mkButton
+          size="sm"
+          [variant]="activeType() === '' ? 'solid' : 'outline'"
+          (click)="setType('')"
+        >
+          All
+        </button>
+        @for (ct of contentTypes(); track ct.slug) {
+          <button
+            mkButton
+            size="sm"
+            [variant]="activeType() === ct.slug ? 'solid' : 'outline'"
+            (click)="setType(ct.slug)"
+          >
+            {{ ct.name }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @switch (phase()) {
+    @case ('idle') {
+      <mk-empty-state
+        icon="search"
+        title="Search your content"
+        description="Type at least two characters to search titles and body across all content types — drafts and scheduled included."
+      />
+    }
+    @case ('loading') {
+      <div class="center"><mk-spinner label="Searching…" /></div>
+    }
+    @case ('done') {
+      @if (hits().length) {
+        <p class="count">{{ hits().length }} result{{ hits().length === 1 ? '' : 's' }}</p>
+        <div class="results">
+          @for (hit of hits(); track hit.entry.id) {
+            <button class="hit" type="button" (click)="open(hit)">
+              <mk-card class="hit-card">
+                <div class="hit-top">
+                  <span class="hit-title">{{ hit.entry.title || 'Untitled' }}</span>
+                  <span class="hit-type">{{ hit.entry.type }}</span>
+                  <mk-badge [tone]="statusTone(hit.entry.status)" variant="soft" size="sm">
+                    {{ hit.entry.status }}
+                  </mk-badge>
+                </div>
+                @if (hit.snippet) {
+                  <p class="hit-snippet" [innerHTML]="hit.snippet"></p>
+                }
+                <p class="hit-meta">Updated {{ fmtDate(hit.entry.updatedAt) }}</p>
+              </mk-card>
+            </button>
+          }
+        </div>
+      } @else {
+        <mk-empty-state
+          icon="search-x"
+          title="No matches"
+          [description]="'Nothing found for “' + query() + '”. Try different or fewer words.'"
+        />
+      }
+    }
+  }
+</div>

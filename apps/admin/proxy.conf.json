@@ -1,0 +1,12 @@
+{
+  "/graphql": {
+    "target": "http://localhost:4000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/media": {
+    "target": "http://localhost:4000",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

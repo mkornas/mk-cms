@@ -1,0 +1,78 @@
+<mk-page-header heading="Categories &amp; tags" description="Organise your content into groups (taxonomies) like categories or tags. Select one to manage its terms.">
+  <div mkPageHeaderActions>
+    <button mkButton tone="primary" (click)="openNewTaxonomy()">New taxonomy</button>
+  </div>
+</mk-page-header>
+
+@if (selectedTaxonomies().length) {
+  <div class="bulk">
+    <span class="bulk__count">{{ selectedTaxonomies().length }} selected</span>
+    <button mkButton size="sm" variant="outline" tone="danger" [loading]="busy()" (click)="deleteTaxonomies()">
+      Delete
+    </button>
+  </div>
+}
+
+@if (showSkeleton()) {
+  <mk-skeleton-preset preset="table" [rows]="6" [columns]="3" loadingLabel="Loading taxonomies…" />
+} @else if (taxonomies().length === 0) {
+  <mk-empty-state icon="folder" title="No taxonomies yet" description="Create your first taxonomy to start grouping content.">
+    <div mkEmptyStateActions>
+      <button mkButton tone="primary" (click)="openNewTaxonomy()">New taxonomy</button>
+    </div>
+  </mk-empty-state>
+} @else {
+  <mk-table
+    [columns]="taxColumns"
+    [data]="taxonomies()"
+    trackKey="id"
+    [selectable]="true"
+    [(selected)]="selectedTaxonomies"
+    [hover]="true"
+    [zebra]="true"
+    [clickableRows]="true"
+    (rowClick)="selectTaxonomy($event)"
+    emptyMessage="No taxonomies yet."
+    [stackAt]="640"
+  />
+}
+
+@if (activeTaxonomy(); as tax) {
+  <section class="terms-section">
+    <div class="terms-head">
+      <h2 class="page-section-title">Terms in “{{ tax.name }}”</h2>
+      <button mkButton tone="primary" (click)="openAddTerm()">Add term</button>
+    </div>
+
+    @if (selectedTerms().length) {
+      <div class="bulk">
+        <span class="bulk__count">{{ selectedTerms().length }} selected</span>
+        <button mkButton size="sm" variant="outline" tone="danger" [loading]="busy()" (click)="deleteTerms()">
+          Delete
+        </button>
+      </div>
+    }
+
+    @if (termsLoading() && termRows().length === 0) {
+      <mk-skeleton-preset preset="table" [rows]="4" [columns]="4" loadingLabel="Loading terms…" />
+    } @else if (termRows().length === 0) {
+      <mk-empty-state icon="tag" title="No terms yet" description="Add the first term to this taxonomy.">
+        <div mkEmptyStateActions>
+          <button mkButton tone="primary" (click)="openAddTerm()">Add term</button>
+        </div>
+      </mk-empty-state>
+    } @else {
+      <mk-table
+        [columns]="termColumns"
+        [data]="termRows()"
+        trackKey="id"
+        [selectable]="true"
+        [(selected)]="selectedTerms"
+        [hover]="true"
+        [zebra]="true"
+        emptyMessage="No terms yet."
+        [stackAt]="640"
+      />
+    }
+  </section>
+}

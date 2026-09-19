@@ -1,0 +1,80 @@
+<mk-page-header
+  [heading]="typeLabel()"
+  [description]="rangeLabel() + ' shown' + (filter().trim() ? ' · filtered' : '')"
+>
+  <div mkPageHeaderActions>
+    <button mkButton tone="primary" (click)="newEntry()">New {{ typeLabel() }}</button>
+  </div>
+</mk-page-header>
+
+<!-- Status filter: tab strip (panels are unused — the shared table below is
+     the "panel" for every status). -->
+<div class="tabs">
+  <mk-tabs [selectedIndex]="tabIndex()" (selectedIndexChange)="setTabIndex($event)">
+    @for (t of tabs; track t.label) {
+      <mk-tab [label]="t.label" />
+    }
+  </mk-tabs>
+</div>
+
+<!-- Filter -->
+<div class="toolbar">
+  <input mkInput placeholder="Filter this page by title…"
+    [value]="filter()" (input)="setInput($event.target)" />
+  <span class="spacer"></span>
+</div>
+
+<!-- Bulk actions -->
+@if (selected().length) {
+  <div class="bulk">
+    <span class="count">{{ selected().length }} selected</span>
+    @if (status() === 'Trashed') {
+      <button mkButton size="sm" variant="outline" tone="success"
+        [loading]="busy()" (click)="bulkRestore()">Restore</button>
+      <button mkButton size="sm" variant="outline" tone="danger"
+        [loading]="busy()" (click)="bulkDelete()">Delete permanently</button>
+    } @else {
+      <button mkButton size="sm" variant="outline" tone="success"
+        [loading]="busy()" (click)="bulkPublish()">Publish</button>
+      <button mkButton size="sm" variant="outline"
+        [loading]="busy()" (click)="bulkUnpublish()">Unpublish</button>
+      <button mkButton size="sm" variant="outline"
+        [loading]="busy()" (click)="bulkDuplicate()">Duplicate</button>
+      <button mkButton size="sm" variant="outline" tone="danger"
+        [loading]="busy()" (click)="bulkTrash()">Trash</button>
+    }
+  </div>
+}
+
+@if (showSkeleton()) {
+  <mk-skeleton-preset preset="table" [rows]="8" [columns]="columns.length" loadingLabel="Loading entries…" />
+} @else {
+  <mk-table
+    [columns]="columns"
+    [data]="visible()"
+    trackKey="id"
+    [selectable]="true"
+    [(selected)]="selected"
+    [hover]="true"
+    [zebra]="true"
+    [clickableRows]="true"
+    (rowClick)="openEntry($event)"
+    emptyMessage="No entries."
+    [stackAt]="640"
+  >
+    <ng-template mkTableCell="status" let-value>
+      <mk-tag [tone]="statusTone(value)" variant="soft">{{ value }}</mk-tag>
+    </ng-template>
+  </mk-table>
+}
+
+<!-- Pagination -->
+<div class="pager">
+  <button mkButton size="sm" variant="outline" [disabled]="!hasPrev()" (click)="prev()">
+    ← Previous
+  </button>
+  <button mkButton size="sm" variant="outline" [disabled]="!hasNext()" (click)="next()">
+    Next →
+  </button>
+  <span class="range">{{ rangeLabel() }}</span>
+</div>

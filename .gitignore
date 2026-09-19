@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# test coverage
+coverage/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# docker volumes (if bind-mounted locally)
+docker/data/
+
+# media storage (local driver runtime dir)
+/apps/api/storage/

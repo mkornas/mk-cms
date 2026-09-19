@@ -1,0 +1,47 @@
+# Every push and pull request: API typecheck + tests, admin build, image build.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env: { POSTGRES_USER: mkcms, POSTGRES_PASSWORD: mkcms, POSTGRES_DB: mkcms }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U mkcms" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: API — build + tests
+        run: pnpm --filter @mk-cms/api build && pnpm --filter @mk-cms/api test
+        env:
+          DB_HOST: localhost
+          DB_USER: mkcms
+          DB_PASSWORD: mkcms
+          DB_NAME: mkcms
+          REDIS_HOST: localhost
+          JWT_ACCESS_SECRET: ci-access-secret-0123456789abcdef
+          JWT_REFRESH_SECRET: ci-refresh-secret-0123456789abcdef
+      - name: Admin — build
+        run: pnpm --filter @mk-cms/admin build
+      - name: Image builds
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false

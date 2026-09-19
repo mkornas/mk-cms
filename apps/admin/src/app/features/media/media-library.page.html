@@ -1,0 +1,111 @@
+<mk-page-header heading="Media" [description]="media().length + ' item(s)'" />
+
+@if (error(); as msg) {
+  <mk-alert tone="danger">{{ msg }}</mk-alert>
+}
+
+<mk-file-upload
+  accept="image/*"
+  [multiple]="true"
+  [maxSize]="26214400"
+  label="Drop images here or click to upload"
+  hint="PNG, JPG, WebP, GIF · up to 25 MB each"
+  [uploadFn]="upload.uploadFn"
+  (uploaded)="onUploaded()"
+/>
+
+@if (checkedCount() > 0) {
+  <mk-card class="bulk-bar">
+    <div class="bulk-row">
+      <strong>{{ checkedCount() }} selected</strong>
+      <mk-form-field label="Alt text for selected" hint="Applied to every ticked image.">
+        <input mkInput [value]="bulkAlt()" (input)="setInput($event.target, bulkAlt.set)" />
+      </mk-form-field>
+      <div class="bulk-actions">
+        <button mkButton tone="primary" [loading]="busy()" [disabled]="!bulkAlt()" (click)="applyBulkAlt()">
+          Apply to {{ checkedCount() }}
+        </button>
+        <button mkButton variant="outline" tone="danger" [loading]="busy()" (click)="removeChecked()">
+          Delete {{ checkedCount() }}
+        </button>
+        <button mkButton variant="ghost" (click)="clearChecked()">Clear</button>
+      </div>
+    </div>
+  </mk-card>
+}
+
+<div class="layout" [class.has-selection]="hasSelection()">
+  @if (showSkeleton()) {
+    <div class="grid">
+      <mk-skeleton-preset preset="card" [rows]="12" loadingLabel="Loading media…" />
+    </div>
+  } @else if (media().length === 0) {
+    <mk-empty-state
+      icon="image"
+      title="No media yet"
+      description="Upload images above to build your media library."
+    />
+  } @else {
+    <div class="grid">
+      @for (m of media(); track m.id) {
+        <figure
+          class="tile"
+          [attr.data-selected]="selected()?.id === m.id"
+          [attr.data-checked]="isChecked(m.id)"
+          (click)="select(m)"
+        >
+          <span class="tile-check" (click)="$event.stopPropagation()">
+            <mk-checkbox
+              [checked]="isChecked(m.id)"
+              (checkedChange)="toggleChecked(m.id)"
+              aria-label="Select this file"
+            />
+          </span>
+          <img [src]="thumb(m)" [alt]="m.alt ?? m.filename" loading="lazy" />
+          <figcaption>{{ m.filename }}</figcaption>
+        </figure>
+      }
+    </div>
+  }
+
+  @if (selected(); as m) {
+    <mk-card class="detail">
+      <div class="focal-wrap">
+        <img [src]="m.url" [alt]="m.alt ?? m.filename" (click)="onFocalClick($event)" />
+        <span
+          class="focal-marker"
+          [style.left.%]="focal().x * 100"
+          [style.top.%]="focal().y * 100"
+        ></span>
+      </div>
+      <p class="focal-hint">
+        Click the image to set the focal point ({{ (focal().x * 100).toFixed(0) }}%,
+        {{ (focal().y * 100).toFixed(0) }}%). Consumers crop around this subject.
+      </p>
+      <mk-description-list>
+        <mk-desc-item term="File">{{ m.filename }}</mk-desc-item>
+        <mk-desc-item term="Type">{{ m.mime }}</mk-desc-item>
+        <mk-desc-item term="Size">{{ sizeKb(m.size) }}</mk-desc-item>
+        @if (m.width && m.height) {
+          <mk-desc-item term="Dimensions">{{ m.width }}×{{ m.height }}</mk-desc-item>
+        }
+        <mk-desc-item term="Variants">{{ m.variants.length }}</mk-desc-item>
+      </mk-description-list>
+
+      <div class="fields">
+        <mk-form-field label="Alt text" hint="Describe the image for screen readers.">
+          <input mkInput [value]="alt()" (input)="setInput($event.target, alt.set)" />
+        </mk-form-field>
+        <mk-form-field label="Title">
+          <input mkInput [value]="title()" (input)="setInput($event.target, title.set)" />
+        </mk-form-field>
+      </div>
+
+      <div class="actions">
+        <button mkButton tone="primary" [loading]="busy()" (click)="save()">Save</button>
+        <button mkButton variant="outline" [loading]="busy()" (click)="saveFocal()">Save focal point</button>
+        <button mkButton variant="outline" tone="danger" (click)="remove()">Delete</button>
+      </div>
+    </mk-card>
+  }
+</div>

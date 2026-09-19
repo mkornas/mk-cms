@@ -1,0 +1,19 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'packages/plugins/*'
+# @mk-kit/ui is our own library; a fresh release is used the day it ships.
+minimumReleaseAgeExclude:
+  - '@mk-kit/ui'
+
+# Native postinstall build scripts, explicitly decided (pnpm 11 gates these).
+# sharp = API image processing; esbuild/@parcel/watcher/lmdb = Angular admin
+# build + dev-server. Apollo runs fine without protobufjs; bullmq's msgpackr
+# falls back to pure JS — both left unbuilt.
+allowBuilds:
+  sharp: true
+  esbuild: true
+  '@parcel/watcher': true
+  lmdb: true
+  '@apollo/protobufjs': false
+  msgpackr-extract: false

@@ -1,0 +1,73 @@
+<mk-page-header heading="Settings" description="General options for the active site." />
+
+@if (error(); as m) {
+  <mk-alert tone="danger" style="margin-bottom:var(--mk-space-4)">{{ m }}</mk-alert>
+}
+
+<mk-card style="margin-bottom:var(--mk-space-4)">
+  @if (showSkeleton()) {
+    <mk-skeleton-preset preset="list" [rows]="6" loadingLabel="Loading options…" />
+  } @else {
+    <div class="stack">
+      @for (row of rows(); track row.key) {
+        <div class="opt">
+          <div class="opt-head">
+            <span class="opt-key">
+              {{ row.key }}
+              @if (!row.autoload) { <span class="badge">not autoloaded</span> }
+            </span>
+            <button
+              mkButton
+              tone="primary"
+              size="sm"
+              [loading]="savingKey() === row.key"
+              (click)="save(row.key)"
+            >
+              Save
+            </button>
+          </div>
+          <textarea
+            mkInput
+            rows="2"
+            [attr.aria-label]="'Value for ' + row.key"
+            [value]="draftFor(row.key)"
+            (input)="onDraft(row.key, $event.target)"
+          ></textarea>
+        </div>
+      } @empty {
+        <mk-empty-state
+          icon="settings"
+          title="No options yet"
+          description="Add your first key/value option below."
+        />
+      }
+    </div>
+  }
+</mk-card>
+
+<mk-card>
+  <div class="stack">
+    <mk-form-field label="Key" hint="A unique option key for this site.">
+      <input mkInput [value]="newKey()" (input)="onNew($event.target, newKey.set)" />
+    </mk-form-field>
+    <mk-form-field label="Value" hint="Plain text, or JSON for objects/arrays/numbers/booleans.">
+      <textarea
+        mkInput
+        rows="2"
+        [value]="newValue()"
+        (input)="onNew($event.target, newValue.set)"
+      ></textarea>
+    </mk-form-field>
+    <div class="mk-form-actions">
+      <button
+        mkButton
+        tone="primary"
+        [loading]="adding()"
+        [disabled]="newKey().trim() === ''"
+        (click)="add()"
+      >
+        Add option
+      </button>
+    </div>
+  </div>
+</mk-card>

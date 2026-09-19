@@ -1,0 +1,123 @@
+<header class="page-head">
+  <h1>Menus</h1>
+</header>
+
+@if (error(); as msg) {
+  <mk-alert tone="danger" style="margin-bottom: var(--mk-space-4)">{{ msg }}</mk-alert>
+}
+
+<div class="layout">
+  <!-- Menus -->
+  <mk-card>
+    <h2>Menus</h2>
+    @if (showSkeleton()) {
+      <mk-skeleton-preset preset="list" [rows]="6" loadingLabel="Loading menus…" />
+    } @else {
+    <div class="menu-list">
+      @for (m of menus(); track m.id) {
+        <div
+          class="menu-item"
+          [attr.data-active]="activeSlug() === m.slug"
+          (click)="selectMenu(m.slug)"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="selectMenu(m.slug)"
+          (keydown.space)="$event.preventDefault(); selectMenu(m.slug)"
+        >
+          <span>{{ m.name }} <small>/{{ m.slug }}</small></span>
+          <span class="menu-actions">
+            <button mkButton variant="ghost" size="sm"
+              (click)="duplicateMenu(m.slug, $event)">Duplicate</button>
+            <button mkButton variant="ghost" size="sm" tone="danger"
+              (click)="deleteMenu(m.slug, $event)">Delete</button>
+          </span>
+        </div>
+      } @empty {
+        <p style="color: var(--mk-text-muted)">No menus yet.</p>
+      }
+    </div>
+    }
+
+    <div class="new-form">
+      <mk-form-field label="New menu" hint="Slug is derived from the name.">
+        <input mkInput placeholder="e.g. Main navigation"
+          [value]="newMenuName()" (input)="setInput($event.target, newMenuName.set)" />
+      </mk-form-field>
+      <button mkButton tone="primary" [disabled]="!newMenuName().trim() || creatingMenu()" [loading]="creatingMenu()" (click)="createMenu()">
+        Create menu
+      </button>
+    </div>
+  </mk-card>
+
+  <!-- Items of the selected menu -->
+  <mk-card>
+    @if (activeMenu(); as menu) {
+      <h2>Items in “{{ menu.name }}”</h2>
+
+      <div class="items">
+        @for (row of itemTree(); track row.item.id) {
+          <div class="item-row" [style.margin-left.rem]="row.depth * 1.5">
+            <span class="label">{{ row.item.label }}</span>
+            @if (row.item.url) { <span class="url">{{ row.item.url }}</span> }
+            <span class="spacer"></span>
+            <button mkButton variant="ghost" size="sm"
+              [disabled]="!row.canUp" (click)="move(row.item.id, -1)" aria-label="Move up">↑</button>
+            <button mkButton variant="ghost" size="sm"
+              [disabled]="!row.canDown" (click)="move(row.item.id, 1)" aria-label="Move down">↓</button>
+            <button mkButton variant="ghost" size="sm" tone="danger"
+              (click)="deleteItem(row.item.id)">Delete</button>
+          </div>
+        } @empty {
+          <p style="color: var(--mk-text-muted)">No items yet — add one below.</p>
+        }
+      </div>
+
+      <div class="type-toggle">
+        <button mkButton size="sm"
+          [variant]="itemType() === 'Custom' ? 'solid' : 'outline'"
+          [tone]="itemType() === 'Custom' ? 'primary' : 'neutral'"
+          (click)="setItemType('Custom')">Custom URL</button>
+        <button mkButton size="sm"
+          [variant]="itemType() === 'Entry' ? 'solid' : 'outline'"
+          [tone]="itemType() === 'Entry' ? 'primary' : 'neutral'"
+          (click)="setItemType('Entry')">Content entry</button>
+      </div>
+
+      <div class="add-item">
+        <mk-form-field label="Label">
+          <input mkInput placeholder="e.g. About"
+            [value]="itemLabel()" (input)="setInput($event.target, itemLabel.set)" />
+        </mk-form-field>
+
+        @if (itemType() === 'Custom') {
+          <mk-form-field label="URL">
+            <input mkInput placeholder="/about"
+              [value]="itemUrl()" (input)="setInput($event.target, itemUrl.set)" />
+          </mk-form-field>
+        } @else {
+          <mk-form-field label="Linked entry">
+            @if (pickedEntry(); as e) {
+              <div class="picked">
+                <span>{{ e.title }} <small>({{ e.type }})</small></span>
+                <button mkButton variant="ghost" size="sm" (click)="chooseEntry()">Change</button>
+              </div>
+            } @else {
+              <button mkButton variant="outline" size="sm" (click)="chooseEntry()">Choose entry…</button>
+            }
+          </mk-form-field>
+        }
+
+        <button mkButton tone="primary" [disabled]="!itemLabel().trim() || addingItem()" [loading]="addingItem()" (click)="addItem()">
+          Add item
+        </button>
+      </div>
+
+      <mk-form-field label="Parent" style="max-width: 24rem; margin-top: var(--mk-space-3)">
+        <mk-select [options]="parentOptions()"
+          [value]="itemParent()" (valueChange)="itemParent.set(asId($event))" />
+      </mk-form-field>
+    } @else {
+      <p style="color: var(--mk-text-muted)">Select a menu to manage its items.</p>
+    }
+  </mk-card>
+</div>

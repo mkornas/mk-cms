@@ -1,0 +1,162 @@
+<div class="editor">
+  <header class="editor-bar">
+    <div class="editor-bar__title">
+      <button
+        mkButton
+        variant="ghost"
+        size="sm"
+        iconOnly
+        [attr.aria-label]="'Back to the ' + type() + ' list'"
+        [mkTooltip]="'Back to ' + type() + ' list'"
+        (click)="backToList()"
+      >
+        <mk-icon name="arrow-left" />
+      </button>
+      <strong>{{ isNew() ? 'New ' + type() : title() || 'Untitled' }}</strong>
+      <mk-badge [tone]="isPublished() ? 'success' : 'neutral'" variant="soft">{{ status() }}</mk-badge>
+      @if (dirty()) {
+        <span class="editor-dirty"><span class="editor-dirty__dot" aria-hidden="true"></span>Unsaved changes</span>
+      }
+    </div>
+    <div class="editor-bar__actions">
+      @if (wordCount(); as words) {
+        <span class="editor-count" aria-label="Word count">{{ words }} words</span>
+      }
+      @if (!isNew()) {
+        <button mkButton variant="ghost" (click)="openHistory()">
+          <mk-icon name="clock" size="sm" /> History
+        </button>
+        <button mkButton variant="ghost" (click)="openPreview()">
+          <mk-icon name="external-link" size="sm" /> Preview
+        </button>
+        <button mkButton variant="outline" (click)="togglePublish()">
+          {{ isPublished() ? 'Unpublish' : 'Publish' }}
+        </button>
+      }
+      <button mkButton tone="primary" [loading]="saving()" (click)="save()">Save</button>
+    </div>
+  </header>
+
+  @if (error(); as msg) {
+    <mk-alert tone="danger" style="margin-bottom: var(--mk-space-4)">{{ msg }}</mk-alert>
+  }
+
+  @if (loading()) {
+    <div class="editor-grid">
+      <main class="editor-main">
+        <mk-card><mk-skeleton-preset preset="card" [rows]="8" loadingLabel="Loading editor…" /></mk-card>
+      </main>
+      <aside class="editor-side">
+        <mk-card><mk-skeleton-preset preset="paragraph" [rows]="4" /></mk-card>
+      </aside>
+    </div>
+  } @else {
+  <div class="editor-grid">
+    <!-- Main content column: the parts that matter most for a human author —
+         title, featured image, then the body. -->
+    <main class="editor-main">
+      <input
+        class="title-input"
+        placeholder="Add title"
+        aria-label="Title"
+        [value]="title()"
+        (input)="setInput($event.target, title.set)"
+      />
+
+      @if (heroField(); as hero) {
+        <mk-card padding="sm">
+          <span class="block-label">{{ hero.name }}</span>
+          <app-media-field
+            [hero]="true"
+            [field]="hero"
+            [value]="fields()[hero.key]"
+            (valueChange)="setField(hero.key, $event)"
+          />
+        </mk-card>
+      }
+
+      <!-- Long-form fields: prose (richtext) writes directly on the page —
+           no card chrome around the writing canvas; short text (summary,
+           excerpt) keeps a light card. -->
+      @for (f of bodyFields(); track f.key) {
+        @if (f.type === 'richtext') {
+          <app-field-control
+            class="prose-block"
+            [field]="f"
+            [value]="fields()[f.key]"
+            (valueChange)="setField(f.key, $event)"
+            [error]="fieldErrors()[f.key]"
+          />
+        } @else {
+          <mk-card padding="sm">
+            <app-field-control
+              [field]="f"
+              [value]="fields()[f.key]"
+              (valueChange)="setField(f.key, $event)"
+              [error]="fieldErrors()[f.key]"
+            />
+          </mk-card>
+        }
+      }
+
+      @if (detailFields().length) {
+        <mk-card>
+          <h2 class="card-title">Details</h2>
+          <div class="fields">
+            @for (f of detailFields(); track f.key) {
+              <app-field-control
+                [field]="f"
+                [value]="fields()[f.key]"
+                (valueChange)="setField(f.key, $event)"
+                [error]="fieldErrors()[f.key]"
+              />
+            }
+          </div>
+        </mk-card>
+      }
+    </main>
+
+    <!-- Meta sidebar: publishing + configuration, tucked into collapsible
+         sections so it doesn't compete with the content. -->
+    <aside class="editor-side">
+      <mk-card>
+        <h2 class="card-title">Status &amp; visibility</h2>
+        <div class="side-row">
+          <span class="muted">Status</span>
+          <mk-badge [tone]="isPublished() ? 'success' : 'neutral'" variant="soft">{{ status() }}</mk-badge>
+        </div>
+        <mk-form-field label="Slug" hint="Leave blank to auto-generate from the title.">
+          <input mkInput class="slug-input" [value]="slug()" (input)="setInput($event.target, slug.set)" />
+        </mk-form-field>
+        @if (isNew()) {
+          <p class="muted" style="margin: var(--mk-space-3) 0 0">
+            Save first to manage taxonomies, SEO, scheduling and revisions.
+          </p>
+        }
+      </mk-card>
+
+      @if (id(); as entryId) {
+        <mk-card padding="sm">
+          <mk-accordion [multi]="true">
+            <mk-accordion-item header="Taxonomies">
+              <app-entry-terms [entryId]="entryId" />
+            </mk-accordion-item>
+            <mk-accordion-item header="SEO">
+              <app-entry-seo [entryId]="entryId" />
+            </mk-accordion-item>
+            <mk-accordion-item header="Schedule">
+              <app-entry-schedule [entryId]="entryId" />
+            </mk-accordion-item>
+            <mk-accordion-item header="Parent">
+              <app-entry-parent [entryId]="entryId" [type]="type()" />
+            </mk-accordion-item>
+            <mk-accordion-item header="Translations">
+              <app-entry-translations [entryId]="entryId" />
+            </mk-accordion-item>
+          </mk-accordion>
+        </mk-card>
+      }
+    </aside>
+  </div>
+  }
+</div>
