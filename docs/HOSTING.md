@@ -70,7 +70,7 @@ cache at the edge. Optional, per-site, no CMS changes.
    CF Pages deploy hook → live in ~1–2 min. Zero runtime dependency on the CMS
    (it can be *down* and every site stays up), perfect Core Web Vitals, ~zero
    hosting cost. Right for brochure sites, blogs, restaurant menus — the
-   Rozpędzeni-style client base.
+   typical small-agency client base.
 
 2. **SSR / ISR — for big or fast-moving sites.** Next/Nuxt/Astro-SSR on
    CF/Vercel when full rebuilds get slow (10k+ pages) or content must be live in

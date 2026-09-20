@@ -99,7 +99,7 @@ const UPDATE_SITE_DOMAINS = gql`
       <div class="dlg__body">
         @if (mode === 'create') {
           <mk-form-field label="Name" hint="Slug is derived from the name.">
-            <input mkInput placeholder="e.g. Rozpędzeni"
+            <input mkInput placeholder="e.g. Northwind Studio"
               [value]="name()" (input)="set($event.target, name.set)"
               (keyup.enter)="submitCreate()" />
           </mk-form-field>

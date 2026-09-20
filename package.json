@@ -17,6 +17,7 @@
     "build": "pnpm -r build",
     "infra:up": "docker compose -f docker/docker-compose.yml up -d postgres redis",
     "infra:down": "docker compose -f docker/docker-compose.yml down",
-    "infra:reset": "docker compose -f docker/docker-compose.yml down -v"
+    "infra:reset": "docker compose -f docker/docker-compose.yml down -v",
+    "screens": "node tools/screens.mjs"
   }
 }

@@ -49,9 +49,10 @@ curl -s localhost:4000/graphql -H 'content-type: application/json' -H 'x-site: d
   -d '{"query":"{ delivery { entries(type:\"post\", limit: 3){ title slug } } }"}'
 ```
 
-For anything beyond a look around, set `JWT_ACCESS_SECRET`,
+That runs in development mode with placeholder secrets. For anything beyond
+a look around, set `NODE_ENV=production` together with `JWT_ACCESS_SECRET`,
 `JWT_REFRESH_SECRET` and `SEED_OWNER_PASSWORD` (`openssl rand -base64 32`);
-`NODE_ENV=production` refuses the defaults.
+production refuses the defaults.
 
 ## Develop
 
@@ -59,7 +60,7 @@ Requires Node 22+, pnpm (`corepack enable`) and Docker.
 
 ```bash
 pnpm install
-pnpm infra:up            # Postgres + Redis (+ MinIO) in Docker
+pnpm infra:up            # Postgres + Redis in Docker (MinIO for S3 media: see .env.example)
 cp .env.example .env
 pnpm api:dev             # API on :4000 — migrations run on boot, first boot seeds the owner
 pnpm admin:dev           # admin on :4300, /graphql and /media proxied to the API
@@ -111,6 +112,7 @@ apps/api/            NestJS backend
 apps/admin/          Angular admin (mk-kit, Apollo Client, ngrx SignalStore)
 docker/              compose + the one-image Dockerfile
 docs/                architecture, API, hosting, roadmap, screenshots
+tools/               screens.mjs — retakes the screenshots from a running demo
 ```
 
 ## Status
